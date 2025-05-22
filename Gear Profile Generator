@@ -1,0 +1,152 @@
+import math
+import matplotlib.pyplot as plt
+import numpy as np
+
+# INPUT PARAMETERS
+
+C=250 #In MM
+N1=2.5 #Gear Rato
+N2=1  #Gear Ratip
+RPM=1250 # IN RPM
+CS=1.25
+P=15  #IN KW
+sig=233.4
+
+Mt=(9.55*pow(10,6)*P*CS)/RPM
+D1= round((2*C*N2)/(N2+N1))
+D2= round(2*C-D1)
+v=(math.pi*D1*RPM)/60000
+Cv=4.58/(4.58+v)
+m_sq_y= (2*Mt)/(sig*Cv*10*math.pi*D1)
+
+print ("Diameter D1- ",D1)
+print("Diameter D2- ",D2)
+
+
+
+
+Module=[1,1.25,1.5,2,3,4,5,6,8,10,12,16,20,25,32,40,50]
+Module.sort()
+for m in Module:
+    M= m*m*(0.175-((0.95*m)/D1))-(m_sq_y)
+    if M>0:
+        print("Module-",m)
+        break
+
+
+
+
+# Parameters
+M1=M = m
+T = round(D1/m)
+T1 = round(D2/m)
+print("Number of teeth in Gear 1:",T)
+print("Number of teeth in Gear 2:",T1)
+
+d = M * T
+df = (T - 2.5) * M
+da = (T + 2) * M
+thetha = (360 / T) * 0.5
+d1 = M1 * T1
+df1 = (T1 - 2.5) * M1
+da1 = (T1 + 2) * M1
+theta1 = (360 / T1) * 0.5
+dis=(d1+d)*0.5
+dx = []
+dy = []
+a1x = []
+a1y = []
+a2x = []
+a2y = []
+gx = []
+gy = []
+
+# Collect points on the base circle based on tooth spacing
+
+x = 0
+while x < 361:
+    a=16 # Incase both the gear's teeth intersect with eachother this the required angle 16 to add to make the gears mesh else keep the value to be 0
+    dx.append(df / 2 * math.cos(math.radians(x+a)))  # Corrected radius usage
+    dy.append(df / 2 * math.sin(math.radians(x+a)))
+    a1x.append(da / 2 * math.cos(math.radians(a+(x + x + thetha) / 2 + (thetha / 4))))  # Corrected radius usage
+    a1y.append(da / 2 * math.sin(math.radians(a+(x + x + thetha) / 2 + (thetha / 4))))
+    a2x.append(da / 2 * math.cos(math.radians(a+(x + x + thetha) / 2 - (thetha / 4))))  # Corrected radius usage
+    a2y.append(da / 2 * math.sin(math.radians(a+(x + x + thetha) / 2 - (thetha / 4))))
+    x += thetha
+
+spx = [item for sublist in zip(dx, a2x, a1x) for item in sublist]
+spy = [item for sublist in zip(dy, a2y, a1y) for item in sublist]
+
+# Safely append points to gx and gy
+for i in range(0, len(spx), 6):  
+    if i + 3 <= len(spx):  
+        gx.extend(spx[i:i + 4])  
+        gy.extend(spy[i:i + 4])
+
+# Generate circle points
+num_points = 360  # Number of points
+theta = np.linspace(0, 2 * np.pi, num_points)  # Angles in radians
+x1 = d / 2 * np.cos(theta)
+y1 = d / 2 * np.sin(theta)
+x2 = df / 2 * np.cos(theta)
+y2 = df / 2 * np.sin(theta)
+x3 = da / 2 * np.cos(theta)
+y3 = da / 2 * np.sin(theta)
+
+dx1 = []
+dy1 = []
+a1x1 = []
+a1y1 = []
+a2x1 = []
+a2y1 = []
+gx1 = []
+gy1 = []
+
+# Collect points on the base circle based on tooth spacing
+x = 0
+while x < 361:
+    dx1.append(dis+df1 / 2 * math.cos(math.radians(x)))  # Corrected radius usage
+    dy1.append(df1 / 2 * math.sin(math.radians(x)))
+    a1x1.append(dis+da1 / 2 * math.cos(math.radians((x + x + theta1) / 2 + (theta1 / 4))))  # Corrected radius usage
+    a1y1.append(da1 / 2 * math.sin(math.radians((x + x + theta1) / 2 + (theta1 / 4))))
+    a2x1.append(dis+da1 / 2 * math.cos(math.radians((x + x + theta1) / 2 - (theta1 / 4))))  # Corrected radius usage
+    a2y1.append(da1 / 2 * math.sin(math.radians((x + x + theta1) / 2 - (theta1 / 4))))
+    x += theta1
+
+spx1 = [item for sublist in zip(dx1, a2x1, a1x1) for item in sublist]
+spy1 = [item for sublist in zip(dy1, a2y1, a1y1) for item in sublist]
+
+# Safely append points to gx1 and gy1
+for i in range(0, len(spx1), 6):  
+    if i + 3 <= len(spx1):  
+        gx1.extend(spx1[i:i + 4])  
+        gy1.extend(spy1[i:i + 4])
+
+# Generate circle points
+num_points = 360  # Number of points
+theta_values = np.linspace(0, 2 * np.pi, num_points)  # Angles in radians
+x4 = dis+d1 / 2 * np.cos(theta_values)
+y4 = d1 / 2 * np.sin(theta_values)
+x5 = dis+df1 / 2 * np.cos(theta_values)
+y5 = df1 / 2 * np.sin(theta_values)
+x6 = dis+da1 / 2 * np.cos(theta_values)
+y6 = da1 / 2 * np.sin(theta_values)
+
+
+# Plot the gear design
+plt.figure(figsize=(20, 20))
+plt.plot(x1, y1, 'b-', label="Pitch Circle", linestyle="--",alpha=0.5)  # Plot the circle
+plt.plot(x2, y2, 'y-', label="Dedendum Circle", linestyle="--",alpha=0.5)
+plt.plot(x3, y3, 'r-', label="Addendum Circle", linestyle="--",alpha=0.5)
+plt.plot(x4, y4, 'b-',linestyle="--",alpha=0.5)  # Plot the circle
+plt.plot(x5, y5, 'y-', linestyle="--",alpha=0.5)
+plt.plot(x6, y6, 'r-',linestyle="--",alpha=0.5)
+plt.plot(gx, gy, color="green",label="Gear Profile")
+plt.plot(gx1, gy1, color="green")
+plt.gca().set_aspect('equal', adjustable='box')  # Equal aspect ratio
+plt.title("Gear Design Circles and Points")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.legend()
+plt.grid(True)
+plt.show()
