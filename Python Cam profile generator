@@ -1,0 +1,78 @@
+import math
+import matplotlib.pyplot as plt
+
+# Initialize lists to store displacement values
+x_values = []
+y_values = []
+x2_values = []
+y2_values = []
+x3_values = []
+y3_values = []
+
+# Initialize lists to store profile values
+px_values = []
+py_values = []
+pxc_values = []
+pyc_values = []
+
+Rise_Angle = 120
+Dwell_Angle = 60
+Descent_Angle = 140
+#Dimensions in MM
+Height = 30
+Cam_Radius = 60
+prof_lm = 100
+
+# Rise angle SHM MOTION
+for x in range(Rise_Angle + 1):
+    y = Height * 0.5 * (1 - math.cos((math.pi * x) / Rise_Angle))
+    x_values.append(x)
+    y_values.append(y)
+    h = Cam_Radius + y  # CAM Profile
+    px_values.append(h * math.cos(math.radians(x)))
+    py_values.append(h * math.sin(math.radians(x)))
+
+# Dwell Angle
+for x in range(Rise_Angle, Rise_Angle + Dwell_Angle + 1):
+    x2_values.append(x)
+    y2_values.append(Height)
+    h = Cam_Radius + Height  # CAM Profile
+    px_values.append(h * math.cos(math.radians(x)))
+    py_values.append(h * math.sin(math.radians(x)))
+
+# Descent Angle SHM MOTION
+for x in range(Rise_Angle + Dwell_Angle, Descent_Angle + Rise_Angle + Dwell_Angle + 1):
+    y = -Height * 0.5 * (1 - math.cos((math.pi * (x - Rise_Angle - Dwell_Angle)) / Descent_Angle)) + Height
+    x3_values.append(x)
+    y3_values.append(y)
+    h = Cam_Radius + y  # CAM Profile
+    px_values.append(h * math.cos(math.radians(x)))
+    py_values.append(h * math.sin(math.radians(x)))
+
+# Pitch Circle
+for x in range(361):
+    pxc_values.append(Cam_Radius * math.cos(math.radians(x)))
+    pyc_values.append(Cam_Radius * math.sin(math.radians(x)))
+
+# Plot the Displacement Graph
+plt.plot(x_values, y_values)
+plt.plot(x2_values, y2_values)
+plt.plot(x3_values, y3_values)
+plt.xlabel('Angle (degrees)')
+plt.ylabel('Displacement (mm)')
+plt.title('Displacement Diagram in Simple Harmonic Motion')
+plt.grid(True)
+plt.show()
+
+# CAM Profile
+plt.figure(figsize=(6, 6))
+plt.plot(px_values, py_values, 'r')  # 'r' means red color line
+plt.plot(pxc_values, pyc_values, 'g')  # 'g' means green color line
+plt.plot(0, 0, 'bo')  # 'bo' means blue color point at center
+plt.xlim(-prof_lm, prof_lm)
+plt.ylim(-prof_lm, prof_lm)
+plt.title('CAM Profile Simple Harmonic Motion')
+plt.xlabel('X AXIS')
+plt.ylabel('Y AXIS')
+plt.grid(True)
+plt.show()
